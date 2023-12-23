@@ -1,6 +1,8 @@
 # main.py
 import logging
+import os
 import time
+from azure.storage.blob import BlobServiceClient, ContentSettings
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from gradio_client import Client
 
@@ -24,13 +26,11 @@ def time_consuming_task():
 @app.post("/voice-model/{user_id}")
 async def generate_voice_model_handler(user_id: str, body: dict, background_tasks: BackgroundTasks):
     file = body.get("file")
+
     if not file:
         return HTTPException(status_code=400, detail="File is required")
     
-    print(file)
-    print(user_id)
-
-    background_tasks.add_task(time_consuming_task)
+    background_tasks.add_task(generate_voice_model_task, user_id, file)
 
     return {"Hello": "World"}
 
@@ -47,23 +47,51 @@ async def generate_audio_handler(user_id: str, body: dict, background_tasks: Bac
     if not file:
         return HTTPException(status_code=400, detail="file is required")
     
-    print(text)
-    print(user_id)
-
-    background_tasks.add_task(time_consuming_task)
+    background_tasks.add_task(generate_audio_task, id, file, text)
 
     return {"Hello": "World"}
 
 def generate_voice_model_task(user_id: str, file_location: str):
-    # predict
-    # save to azure
+    prompt_path = make_prompt(user_id, file_location)
+
+    # save to storage
+    blob_name = f"{user_id}.npz"
+    upload_to_storage("test", blob_name, prompt_path)
+
     # remove from tmp
+    # notify backend
+
+
+    logger.info(f"prompt_path: {prompt_path}")
+    logger.info(f"blob_name: {blob_name}")
+
     return
 
 def generate_audio_task(id: str, file_location: str, text: str):
-    # predict
-    # save to azure
+    blob_service_client = get_azure_client()
+    blob_client = blob_service_client.get_blob_client(container="test", blob="1.npz")
+
+    # FIXME: 一旦ダウンロードしないとエラーになる
+    download_path = "/tmp/npz/test.npz"
+    os.makedirs(os.path.dirname(download_path), exist_ok=True)
+    with open(download_path, "wb") as download_file:
+        logger.info(f"downloaded blob")
+        download_blob = blob_client.download_blob()
+        download_file.write(download_blob.readall())
+        logger.info(f"downloaded blob")
+
+    audio_path = infer_from_prompt(text, "/tmp/npz/test.npz")
+
+    # save to storage
+    blob_name = f"{id}.wav"
+    upload_to_storage("test", blob_name, audio_path)
+
     # remove from tmp
+    # notify backend
+
+    logger.info(f"audio_path: {audio_path}")
+    logger.info(f"blob_name: {blob_name}")
+
     return
 
 def make_prompt(prompt_name: str, file_location: str) -> str:
@@ -92,3 +120,14 @@ def infer_from_prompt(text: str, file_location: str) -> str:
 
     _, file_path = result
     return file_path
+
+def upload_to_storage(container_name: str, blob_name: str, file_path: str):
+    blob_service_client = get_azure_client()
+    blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+    with open(file_path, "rb") as data:
+        blob_client.upload_blob(data, content_settings=ContentSettings(content_type="application/octet-stream"))
+
+def get_azure_client():
+    connection_string = ""
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    return blob_service_client
