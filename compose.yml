@@ -1,10 +1,10 @@
 services:
-  # fastapi
-  fastapi:
+  # vall-e-x
+  vall-e-x:
     build:
       context: ./services/vall-e-x-api
       dockerfile: Dockerfile
-    container_name: fastapi
+    container_name: vall-e-x
     ports:
       - 8080:80
     volumes:
