@@ -1,1 +1,5 @@
+# containers
+containers/minio/data
+
+# services
 __pycache__
