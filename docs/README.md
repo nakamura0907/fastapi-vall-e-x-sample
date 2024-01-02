@@ -18,6 +18,7 @@
 
 - オーディオプロンプトCUD
     - オーディオプロンプトの生成
+    - オーディオプロンプトの内容取得
     - オーディオプロンプトのPATCH（音声ファイルやTranscriptの変更）
     - オーディオプロンプトの削除
 - 合成音声CRUD
@@ -70,3 +71,27 @@
 **audio_prompts**
 
 **synthetic_voices**
+
+# API設計
+
+---
+
+## POST /prompts
+
+## GET /prompts
+
+## GET /prompts/{id}
+
+## PATCH /prompts/{id}
+
+## DELETE /prompts/{id}
+
+## POST /prompts/{id}/synthetic-voices
+
+## GET /synthetic-voices
+
+## GET /synthetic-voices/{id}
+
+## PATCH /synthetic-voices/{id}
+
+## DELETE /synthetic-voices/{id}
