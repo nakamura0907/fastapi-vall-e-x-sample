@@ -8,7 +8,7 @@ services:
     ports:
       - 8080:80
     volumes:
-      - ./services/vall-e-x-api:/app
+      - ./services/vall-e-x-api/app:/code/app
 
   # minio
   minio:
