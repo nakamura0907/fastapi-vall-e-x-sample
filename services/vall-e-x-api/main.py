@@ -1,9 +1,12 @@
 import os
 from tempfile import NamedTemporaryFile
-from fastapi import FastAPI,  File, UploadFile, HTTPException
+from typing import Optional
+from fastapi import FastAPI,  File, UploadFile, HTTPException, Depends, Form
 from pydantic import BaseModel
 from gradio_client import Client
 from minio import Minio
+from dataclasses import dataclass
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 client = Client("https://plachta-vall-e-x.hf.space/")
@@ -79,6 +82,16 @@ def generate_audio_handler(user_id: str, body: AudioRequest):
     os.remove(download_path)
 
     return {"status": "ok"}
+
+@dataclass
+class PostPromptRequest:
+    trainAudioFile: UploadFile = File(...)
+    transcript: Optional[str] = Form(None)
+
+@app.post("/prompts")
+def post_prompt(form_data: PostPromptRequest = Depends()):
+    content = {"detail": "Function not implemented"}
+    return JSONResponse(content=content, status_code=501)
 
 #                                                   
 #                                                   
