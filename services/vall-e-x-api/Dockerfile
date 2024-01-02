@@ -1,4 +1,5 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
+# See https://fastapi.tiangolo.com/ja/deployment/docker/
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.11
 
 WORKDIR /code
 
