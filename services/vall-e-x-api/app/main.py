@@ -1,17 +1,14 @@
-import re
 import os
 from dataclasses import dataclass
 from fastapi import FastAPI,  File, UploadFile, Depends, Form, status, Response
 from fastapi.responses import JSONResponse
-from gradio_client import Client
-from typing import Optional, Union, Tuple
+from typing import Optional
 from tempfile import NamedTemporaryFile
 
 from .exceptions import ApplicationException, show_traceback
+from .vall_e_x.predict import make_prompt
 
 app = FastAPI()
-client = Client("https://plachta-vall-e-x.hf.space/")
-
 
 @app.exception_handler(ApplicationException)
 async def application_exception_handler(_, exc: ApplicationException):
@@ -72,23 +69,3 @@ async def post_prompt(form_data: PostPromptRequest = Depends()):
             "Location": "/{prompt_id}",
         })
 
-def make_prompt(prompt_name: str, file_location: str, transcript: Union[str, None]) -> Tuple[str, str]:
-    if transcript is None:
-        transcript = ""
-
-    result = client.predict(
-        prompt_name,
-        file_location,	
-        file_location,
-        transcript,
-        fn_index=3
-    )
-
-    # Parse prompt result
-    match = re.search(r'\[([^]]+)\](.*?)\[[^]]+\]', result[0])
-    if match:
-        detected_text = match.group(2)
-        return detected_text, result[1]
-    else:
-        raise ValueError("Prompt result is invalid")
-    

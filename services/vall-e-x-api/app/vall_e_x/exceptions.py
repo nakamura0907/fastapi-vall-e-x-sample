@@ -1,5 +1,6 @@
 from ..exceptions import ApplicationException
 
-# 正規表現でDetectedTextを抽出することができなかった場合に発生する例外
 class DetectedTextNotFoundException(ApplicationException):
-    def 
+    """Exception raised when detected text is not found"""
+    def __init__(self):
+        super().__init__("DetectedText not found", 500)
